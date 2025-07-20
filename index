@@ -1,0 +1,3567 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorize - Aplikasi Pasangan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #FF6B9D;
+            --secondary-color: #4ECDC4;
+            --accent-color: #45B7D1;
+            --background-light: #FFF5F8;
+            --background-dark: #1A1A2E;
+            --text-light: #333;
+            --text-dark: #E0E0E0;
+            --card-light: #FFFFFF;
+            --card-dark: #16213E;
+            --border-light: #E8E8E8;
+            --border-dark: #3A3A5C;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background-light);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background: var(--background-dark);
+            color: var(--text-dark);
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--card-light);
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .container {
+            background: var(--card-dark);
+        }
+
+        /* LOGIN SCREEN */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .login-card {
+            background: var(--card-light);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 350px;
+            transform: translateY(20px);
+            animation: slideUp 0.6s ease forwards;
+        }
+
+        .dark-mode .login-card {
+            background: var(--card-dark);
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .dark-mode .form-group label {
+            color: var(--text-dark);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--card-light);
+            color: var(--text-light);
+        }
+
+        .dark-mode .form-group input {
+            background: var(--background-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            margin-top: 10px;
+        }
+
+        .form-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+
+        /* MAIN APP */
+        .main-app {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-pic:hover {
+            transform: scale(1.1);
+        }
+
+        .notification-btn, .settings-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .notification-btn:hover, .settings-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: var(--card-light);
+            border-top: 1px solid var(--border-light);
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode .navbar {
+            background: var(--card-dark);
+            border-top-color: var(--border-dark);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .nav-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 5px;
+        }
+
+        .nav-text {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--card-light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        .dark-mode .card {
+            background: var(--background-dark);
+            border-color: var(--border-dark);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* MOOD SELECTOR */
+        .mood-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .mood-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--card-light);
+        }
+
+        .dark-mode .mood-item {
+            background: var(--background-dark);
+            border-color: var(--border-dark);
+        }
+
+        .mood-item:hover, .mood-item.active {
+            transform: scale(1.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.2);
+        }
+
+        /* RELATIONSHIP TIMER */
+        .relationship-timer {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .timer-display {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .timer-units {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .timer-unit {
+            text-align: center;
+        }
+
+        .timer-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .timer-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* CALENDAR */
+        .calendar {
+            background: var(--card-light);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .dark-mode .calendar {
+            background: var(--background-dark);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            color: var(--text-light);
+        }
+
+        .dark-mode .calendar-nav {
+            color: var(--text-dark);
+        }
+
+        .calendar-nav:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            width: 100%;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            position: relative;
+            width: 100%;
+            max-width: 40px;
+            height: 40px;
+            margin: 0 auto;
+        }
+
+        .calendar-day:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .calendar-day.has-event {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .calendar-day.has-memory {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .calendar-day.selected {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* SAVINGS */
+        .savings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .savings-target {
+            background: var(--card-light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-light);
+        }
+
+        .dark-mode .savings-target {
+            background: var(--background-dark);
+            border-color: var(--border-dark);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--border-light);
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .dark-mode .progress-bar {
+            background: var(--border-dark);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.3s ease;
+        }
+
+        .savings-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .savings-amount {
+            text-align: center;
+        }
+
+        .amount-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .amount-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+
+        #reminderList {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .reminder-item {
+            background: var(--card-light);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .reminder-item {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .reminder-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+        /* MODALS */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: var(--card-light);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            animation: modalPop 0.3s ease forwards;
+        }
+
+        .dark-mode .modal-content {
+            background: var(--card-dark);
+        }
+
+        @keyframes modalPop {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            color: var(--text-light);
+        }
+
+        .dark-mode .modal-close {
+            color: var(--text-dark);
+        }
+
+        .modal-close:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* UTILITY CLASSES */
+        .text-center { text-align: center; }
+        .text-primary { color: var(--primary-color); }
+        .text-secondary { color: var(--secondary-color); }
+        .mb-1 { margin-bottom: 10px; }
+        .mb-2 { margin-bottom: 20px; }
+        .mt-1 { margin-top: 10px; }
+        .mt-2 { margin-top: 20px; }
+        .flex { display: flex; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .flex-between { display: flex; justify-content: space-between; }
+        .hidden { display: none; }
+
+        /* RESPONSIVE */
+        @media (max-width: 320px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .login-card {
+                padding: 20px;
+            }
+            
+            .mood-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* ANIMATIONS */
+        .bounce {
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            80% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* ROMANTIC MODAL ANIMATION */
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.3); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.3); }
+  70% { transform: scale(1); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.romantic-modal {
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+}
+
+.romantic-modal h3 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+}
+
+.romantic-heart {
+  font-size: 5rem;
+  animation: heartBeat 1.3s ease infinite, float 3s ease-in-out infinite;
+  display: inline-block;
+  margin: 20px 0;
+}
+
+.romantic-confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--primary-color);
+  opacity: 0;
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LOGIN SCREEN -->
+        <div class="login-screen" id="loginScreen">
+            <div class="login-card">
+                <div class="logo">
+                    <h1>💕 Memorize</h1>
+                    <p>Aplikasi untuk pasangan tercinta</p>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Masuk</button>
+                    <button type="button" class="btn btn-secondary" onclick="showRegister()">Daftar</button>
+                </form>
+                
+                <div class="form-links">
+                    <a href="#" onclick="showForgotPassword()">Lupa Password?</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGISTER SCREEN -->
+        <div class="login-screen hidden" id="registerScreen">
+            <div class="login-card">
+                <div class="logo">
+                    <h1>💕 Memorize</h1>
+                    <p>Daftar akun baru</p>
+                </div>
+                
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="registerName">Nama Lengkap</label>
+                        <input type="text" id="registerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerConfirmPassword">Konfirmasi Password</label>
+                        <input type="password" id="registerConfirmPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Daftar</button>
+                    <button type="button" class="btn btn-secondary" onclick="showLogin()">Sudah Punya Akun</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MAIN APP -->
+        <div class="main-app" id="mainApp">
+            <!-- HEADER -->
+            <div class="header">
+                <div class="header-left">
+                    <h2>Memorize</h2>
+                </div>
+                <div class="header-right">
+                    <button class="settings-btn" onclick="showSettings()">⚙️</button>
+                    <button class="notification-btn" onclick="showNotifications()">
+                        🔔
+                        <span id="notificationBadge" class="hidden" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex; align-items: center; justify-content: center;">0</span>
+                    </button>
+                    <div class="profile-pic" onclick="showProfile()">
+                        <span id="profileInitial">U</span>
+                        <img id="profileImage" class="hidden" style="width: 100%; height: 100%; border-radius: 50%;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="content">
+                <!-- CATATAN PAGE -->
+                <div class="page active" id="catatanPage">
+                    <div class="mood-section">
+                        <h3>Bagaimana perasaanmu hari ini?</h3>
+                        <div class="mood-grid">
+                            <div class="mood-item" data-mood="happy">😊</div>
+                            <div class="mood-item" data-mood="love">😍</div>
+                            <div class="mood-item" data-mood="sad">😢</div>
+                            <div class="mood-item" data-mood="angry">😠</div>
+                            <div class="mood-item" data-mood="excited">🤩</div>
+                            <div class="mood-item" data-mood="tired">😴</div>
+                            <div class="mood-item" data-mood="worried">😰</div>
+                            <div class="mood-item" data-mood="silly">🤪</div>
+                            <div class="mood-item" data-mood="neutral">😐</div>
+                            <div class="mood-item" data-mood="grateful">🙏</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Mood Pasangan</h4>
+                        <div class="flex-center" style="gap: 10px; margin-top: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 40px;" id="myMood">😊</div>
+                                <p>Kamu</p>
+                            </div>
+                            <div style="font-size: 30px;">💕</div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 40px;" id="partnerMood">😍</div>
+                                <p id="partnerName">Pasangan</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relationship-timer">
+                        <h4>Hubungan Kalian</h4>
+                        <div class="timer-display" id="mainTimer">0 Hari</div>
+                        <div class="timer-units">
+                            <div class="timer-unit">
+                                <span class="timer-number" id="timerYears">0</span>
+                                <span class="timer-label">Tahun</span>
+                            </div>
+                            <div class="timer-unit">
+                                <span class="timer-number" id="timerMonths">0</span>
+                                <span class="timer-label">Bulan</span>
+                            </div>
+                            <div class="timer-unit">
+                                <span class="timer-number" id="timerDays">0</span>
+                                <span class="timer-label">Hari</span>
+                            </div>
+                            <div class="timer-unit">
+                                <span class="timer-number" id="timerHours">0</span>
+                                <span class="timer-label">Jam</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Foto Kenangan Kemarin</h4>
+                        <div id="recentMemories" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                            <div style="aspect-ratio: 1; background: #f0f0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #999;">
+                                📷
+                            </div>
+                            <div style="aspect-ratio: 1; background: #f0f0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #999;">
+                                📷
+                            </div>
+                            <div style="aspect-ratio: 1; background: #f0f0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #999;">
+                                📷
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" id="upcomingEvents">
+                        <h4>Pengingat Rencana</h4>
+                        <div id="reminderList">
+                            <p style="color: #999; text-align: center; margin-top: 15px;">Belum ada rencana</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KALENDER PAGE -->
+                <div class="page" id="kalenderPage">
+                    <div class="calendar">
+                        <div class="calendar-header">
+                            <button class="calendar-nav" onclick="previousMonth()">‹</button>
+                            <h3 id="currentMonth">Januari 2025</h3>
+                            <button class="calendar-nav" onclick="nextMonth()">›</button>
+                        </div>
+                        <div class="calendar-grid" id="calendarGrid">
+                            <!-- Calendar days will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-2">
+                        <h4>Rencana & Kenangan</h4>
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button class="btn btn-primary" style="flex: 1;" onclick="addEvent()">Tambah Rencana</button>
+                            <button class="btn btn-secondary" style="flex: 1;" onclick="addMemory()">Tambah Kenangan</button>
+                        </div>
+                        <div id="selectedDateEvents" style="margin-top: 20px;">
+                            <p style="color: #999; text-align: center;">Pilih tanggal untuk melihat rencana</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABUNGAN PAGE -->
+                <div class="page" id="tabunganPage">
+                    <div class="savings-header">
+                        <h3>Target Tabungan</h3>
+                        <button class="btn btn-primary" style="padding: 10px 20px; width: auto;" onclick="createSavingsTarget()">+ Target</button>
+                    </div>
+
+                    <div id="savingsTargets">
+                        <div class="savings-target">
+                            <h4>Liburan Bersama</h4>
+                            <div class="progress-bar" onclick="showSavingsDetail('liburan')">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                            <div class="savings-details">
+                                <div class="savings-amount">
+                                    <div class="amount-value">Rp 3.250.000</div>
+                                    <div class="amount-label">Terkumpul</div>
+                                </div>
+                                <div class="savings-amount">
+                                    <div class="amount-value">Rp 5.000.000</div>
+                                    <div class="amount-label">Target</div>
+                                </div>
+                            </div>
+                            <div class="savings-details mt-1">
+                                <div class="savings-amount">
+                                    <div class="amount-value text-primary">Rp 1.800.000</div>
+                                    <div class="amount-label">Kamu</div>
+                                </div>
+                                <div class="savings-amount">
+                                    <div class="amount-value text-secondary">Rp 1.450.000</div>
+                                    <div class="amount-label" id="partnerContribution">Pasangan</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-between mt-2">
+                        <button class="btn btn-secondary" style="width: 48%;" onclick="showSavingsHistory()">Riwayat</button>
+                        <button class="btn btn-primary" style="width: 48%;" onclick="addSavings()">Menabung</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAVBAR -->
+            <div class="navbar">
+                <div class="nav-item active" onclick="showPage('catatan')">
+                    <div class="nav-icon">📝</div>
+                    <div class="nav-text">Catatan</div>
+                </div>
+                <div class="nav-item" onclick="showPage('kalender')">
+                    <div class="nav-icon">📅</div>
+                    <div class="nav-text">Kalender</div>
+                </div>
+                <div class="nav-item" onclick="showPage('tabungan')">
+                    <div class="nav-icon">💰</div>
+                    <div class="nav-text">Tabungan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODALS -->
+        <!-- Profile Modal -->
+        <div class="modal" id="profileModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Profil</h3>
+                    <button class="modal-close" onclick="closeModal('profileModal')">&times;</button>
+                </div>
+                <!-- Di dalam modal profil (profileModal) -->
+<div style="text-align: center; margin-bottom: 20px;">
+    <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 15px; overflow: hidden;">
+        <img id="profileModalImage" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+        <span id="profileModalInitial" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: var(--primary-color); color: white; font-size: 2rem;"></span>
+    </div>
+    <button class="btn btn-secondary" style="width: auto; padding: 8px 15px;" onclick="uploadPhoto()">Ganti Foto</button>
+</div>
+                <div class="form-group">
+                    <label>Nama</label>
+                    <input type="text" id="profileName" placeholder="Masukkan nama">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" placeholder="Masukkan email" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Kode Unik Kamu</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="uniqueCode" readonly style="flex: 1;">
+                        <button class="btn btn-secondary" style="width: auto; padding: 12px 15px;" onclick="copyUniqueCode()">Salin</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Kode Pasangan</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="partnerCode" placeholder="Masukkan kode pasangan" style="flex: 1;">
+                        <button class="btn btn-primary" style="width: auto; padding: 12px 15px;" onclick="connectPartner()">Hubungkan</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Pacaran</label>
+                    <input type="date" id="relationshipDate">
+                </div>
+                <div class="form-group">
+                    <label>Status Hubungan</label>
+                    <div id="connectionStatus" style="padding: 10px; border-radius: 8px; text-align: center; margin-top: 10px; background: #f0f0f0;">
+                        Belum terhubung dengan pasangan
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveProfile()">Simpan Profil</button>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Pengaturan</h3>
+                    <button class="modal-close" onclick="closeModal('settingsModal')">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label>Tema</label>
+                    <select id="themeSelect" onchange="changeTheme()">
+                        <option value="light">Terang</option>
+                        <option value="dark">Gelap</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notifikasi</label>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="notifReminder" checked>
+                            Pengingat
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="notifSavings" checked>
+                            Tabungan
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="notifMood" checked>
+                            Mood
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="showAbout()">Tentang Aplikasi</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" style="background: #dc3545;" onclick="logout()">Keluar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Modal -->
+        <div class="modal" id="notificationsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Notifikasi</h3>
+                    <button class="modal-close" onclick="closeModal('notificationsModal')">&times;</button>
+                </div>
+                <div id="notificationsList">
+                    <div style="text-align: center; color: #999; margin-top: 20px;">
+                        <p>Belum ada notifikasi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Event Modal -->
+        <div class="modal" id="addEventModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Tambah Rencana</h3>
+                    <button class="modal-close" onclick="closeModal('addEventModal')">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label>Judul Rencana</label>
+                    <input type="text" id="eventTitle" placeholder="Makan malam romantis">
+                </div>
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" id="eventDate">
+                </div>
+                <div class="form-group">
+                    <label>Waktu</label>
+                    <input type="time" id="eventTime">
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea id="eventDescription" placeholder="Detail rencana..." style="width: 100%; padding: 12px; border: 2px solid var(--border-light); border-radius: 10px; resize: vertical; min-height: 80px;"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="saveEvent()">Simpan Rencana</button>
+            </div>
+        </div>
+
+        <!-- Add Memory Modal -->
+        <div class="modal" id="addMemoryModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Tambah Kenangan</h3>
+                    <button class="modal-close" onclick="closeModal('addMemoryModal')">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label>Judul Kenangan</label>
+                    <input type="text" id="memoryTitle" placeholder="Kencan pertama">
+                </div>
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" id="memoryDate">
+                </div>
+                <div class="form-group">
+                    <label>Foto</label>
+                    <input type="file" id="memoryPhoto" accept="image/*" style="width: 100%; padding: 12px; border: 2px solid var(--border-light); border-radius: 10px;">
+                </div>
+                <div class="form-group">
+                    <label>Cerita</label>
+                    <textarea id="memoryStory" placeholder="Ceritakan kenangan ini..." style="width: 100%; padding: 12px; border: 2px solid var(--border-light); border-radius: 10px; resize: vertical; min-height: 80px;"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="saveMemory()">Simpan Kenangan</button>
+            </div>
+        </div>
+
+        <!-- Savings Target Modal -->
+        <div class="modal" id="savingsTargetModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Target Tabungan Baru</h3>
+                    <button class="modal-close" onclick="closeModal('savingsTargetModal')">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label>Nama Target</label>
+                    <input type="text" id="targetName" placeholder="Liburan ke Bali">
+                </div>
+                <div class="form-group">
+                    <label>Jumlah Target</label>
+                    <input type="number" id="targetAmount" placeholder="5000000">
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea id="targetDescription" placeholder="Deskripsi target..." style="width: 100%; padding: 12px; border: 2px solid var(--border-light); border-radius: 10px; resize: vertical; min-height: 60px;"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="saveSavingsTarget()">Buat Target</button>
+            </div>
+        </div>
+
+        <!-- Add Savings Modal -->
+        <div class="modal" id="addSavingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Menabung</h3>
+                    <button class="modal-close" onclick="closeModal('addSavingsModal')">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label>Pilih Target</label>
+                    <select id="savingsTargetSelect">
+                        <option value="liburan">Liburan Bersama</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Jumlah</label>
+                    <input type="number" id="savingsAmount" placeholder="100000">
+                </div>
+                <div class="form-group">
+                    <label>Catatan</label>
+                    <input type="text" id="savingsNote" placeholder="Uang jajan hari ini">
+                </div>
+                <button class="btn btn-primary" onclick="addSavingsAmount()">Tambah Tabungan</button>
+            </div>
+        </div>
+
+        <!-- Savings Detail Modal -->
+        <div class="modal" id="savingsDetailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Detail Tabungan</h3>
+                    <button class="modal-close" onclick="closeModal('savingsDetailModal')">&times;</button>
+                </div>
+                <div id="savingsDetailContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Savings History Modal -->
+        <div class="modal" id="savingsHistoryModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Riwayat Tabungan</h3>
+                    <button class="modal-close" onclick="closeModal('savingsHistoryModal')">&times;</button>
+                </div>
+                <div id="savingsHistoryContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- About Modal -->
+        <div class="modal" id="aboutModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Tentang Memorize</h3>
+                    <button class="modal-close" onclick="closeModal('aboutModal')">&times;</button>
+                </div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 4rem; margin-bottom: 10px;">💕</div>
+                    <h4>Memorize v1.0</h4>
+                    <p style="color: #666; margin-top: 10px;">Aplikasi untuk pasangan tercinta</p>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <h5>Fitur:</h5>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Mood tracking bersama</li>
+                        <li>Kalender rencana & kenangan</li>
+                        <li>Sistem tabungan bersama</li>
+                        <li>Notifikasi pengingat</li>
+                        <li>Sinkronisasi real-time</li>
+                    </ul>
+                </div>
+                <div style="text-align: center; color: #666;">
+                    <p>Dibuat dengan 💕 untuk pasangan di seluruh dunia</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentPartner = null;
+        let currentDate = new Date();
+        let selectedDate = null;
+        let relationshipStart = null;
+        let userEvents = [];
+        // let supabaseClient = null; // Removed duplicate declaration
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            startRelationshipTimer();
+            generateCalendar();
+            loadUpcomingEvents();
+            loadUserData();
+            setInterval(checkRelationshipStatus, 30000); 
+
+            checkRelationshipStatus();
+        });
+
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://zvktkcllgspnaxbfdmie.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2a3RrY2xsZ3NwbmF4YmZkbWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1NTQ2NTksImV4cCI6MjA2ODEzMDY1OX0.BK4pWQHDyNM_uduIoneyvJyHGa8GMHT6FZ3z-VVC_V0';
+
+        // Pastikan Supabase sudah diload di HTML
+        let supabase;
+        if (typeof window !== 'undefined' && window.supabase) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        // Initialize application
+        async function initializeApp() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+            const { data: userData, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+            
+            if (error) throw error;
+            
+            currentUser = userData;
+            showMainApp();
+            loadUserProfile();
+            
+            // Load partner info if connected
+            if (userData.partner_id) {
+                await loadPartnerInfo();
+                // Setup realtime subscription for partner's events
+                setupRealtimeUpdates();
+            }
+            
+            // Load initial data
+            await loadUpcomingEvents();
+            await generateCalendar();
+        } else {
+            showLogin();
+        }
+    } catch (error) {
+        console.error('Error initializing app:', error);
+        showLogin();
+    }
+}
+
+// Fungsi untuk setup realtime updates
+function setupRealtimeUpdates() {
+    if (!currentUser || !currentUser.partner_id) return;
+
+    const channel = supabase.channel('events_channel')
+        .on(
+            'postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: 'events',
+                filter: `user_id=eq.${currentUser.partner_id}`
+            },
+            (payload) => {
+                console.log('Realtime change received:', payload);
+                if (payload.eventType === 'INSERT') {
+                    // Event baru ditambahkan oleh pasangan
+                    const newEvent = payload.new;
+                    addNotification(`Pasangan menambahkan rencana baru: ${newEvent.title}`);
+                    
+                    // Update kalender dan daftar rencana
+                    loadUpcomingEvents();
+                    generateCalendar();
+                }
+            }
+        )
+        .subscribe();
+
+    return () => {
+        supabase.removeChannel(channel);
+    };
+}
+
+async function loadUserData() {
+    if (!currentUser) return;
+    
+    // Update UI dengan data user
+    document.getElementById('profileInitial').textContent = currentUser.name.charAt(0).toUpperCase();
+    document.getElementById('partnerName').textContent = currentPartner?.name || 'Pasangan';
+    
+    // Jika ada foto profil, tampilkan
+    if (currentUser.profile_picture_url) {
+        document.getElementById('profileImage').src = currentUser.profile_picture_url;
+        document.getElementById('profileImage').classList.remove('hidden');
+        document.getElementById('profileInitial').classList.add('hidden');
+    }
+    
+    // Update mood jika ada
+    if (currentUser.mood) {
+        const moodElement = document.querySelector(`[data-mood="${currentUser.mood}"]`);
+        if (moodElement) {
+            moodElement.classList.add('active');
+            document.getElementById('myMood').textContent = moodElement.textContent;
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+    startRelationshipTimer();
+    generateCalendar();
+    
+    // Setup form listeners
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+    
+    // Setup mood selector
+    setupMoodSelector();
+});
+
+        // Authentication functions
+        function showLogin() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('mainApp').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.remove('hidden');
+            
+            // Add slide animation
+            const registerCard = document.querySelector('#registerScreen .login-card');
+            registerCard.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                registerCard.style.transform = 'translateX(0)';
+            }, 100);
+        }
+
+        function showForgotPassword() {
+            alert('Fitur lupa password akan segera tersedia!');
+        }
+
+        function showMainApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('mainApp').style.display = 'flex';
+        }
+
+        // Form submissions
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    try {
+        // Login dengan Supabase Auth
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (error) {
+            showNotification('Email atau password salah!', 'error');
+            return;
+        }
+        
+        // Dapatkan data user dari tabel 'users'
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+            
+        if (userError) {
+            console.error('Error fetching user data:', userError);
+            showNotification('Gagal memuat data pengguna', 'error');
+            return;
+        }
+        
+        currentUser = userData;
+        showMainApp();
+        loadUserData();
+        loadUserProfile();
+        showNotification('Berhasil masuk!', 'success');
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Terjadi kesalahan saat masuk', 'error');
+    }
+});
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('registerName').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('registerConfirmPassword').value;
+    
+    if (password !== confirmPassword) {
+        showNotification('Password tidak cocok!', 'error');
+        return;
+    }
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Mendaftarkan...';
+    
+    try {
+        // 1. Register user dengan Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                // Untuk nonaktifkan verifikasi email, ini harus di-set di dashboard Supabase
+                emailRedirectTo: window.location.origin
+            }
+        });
+
+        if (authError) throw authError;
+
+        // 2. Buat record di tabel users
+        const userData = {
+            id: authData.user.id,
+            email: email,
+            name: name,
+            unique_code: generateUniqueCode(),
+            created_at: new Date().toISOString()
+        };
+
+        const { error: insertError } = await supabase
+            .from('users')
+            .insert([userData]);
+        
+        if (insertError) throw insertError;
+
+        // 3. Auto-login setelah registrasi
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (loginError) throw loginError;
+
+        currentUser = userData;
+        showMainApp();
+        loadUserData();
+        showNotification('Akun berhasil dibuat!', 'success');
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        
+        if (error.message.includes('already registered')) {
+            showNotification('Email sudah terdaftar. Silakan login.', 'error');
+        } else {
+            showNotification('Terjadi kesalahan saat mendaftar: ' + error.message, 'error');
+        }
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+    }
+});
+
+        // Navigation functions
+        function showPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageName + 'Page').classList.add('active');
+            
+            // Update navbar
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Load page specific data
+            if (pageName === 'kalender') {
+                generateCalendar();
+            } else if (pageName === 'tabungan') {
+                loadSavingsData();
+            }
+        }
+
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showProfile() {
+            loadUserProfile();
+            showModal('profileModal');
+        }
+
+        function showSettings() {
+            showModal('settingsModal');
+        }
+
+        function showNotifications() {
+            loadNotifications();
+            showModal('notificationsModal');
+        }
+
+        function showAbout() {
+            showModal('aboutModal');
+        }
+
+        // Tambahkan fungsi ini di bagian JavaScript Anda, setelah fungsi lainnya
+
+// Fungsi untuk memuat data user
+function loadUserData() {
+    if (!currentUser) return;
+    
+    // Update UI dengan data user
+    document.getElementById('profileInitial').textContent = currentUser.name.charAt(0).toUpperCase();
+    document.getElementById('partnerName').textContent = currentPartner?.name || 'Pasangan';
+    
+    // Jika ada foto profil, tampilkan
+    if (currentUser.profilePicture) {
+        document.getElementById('profileImage').src = currentUser.profilePicture;
+        document.getElementById('profileImage').classList.remove('hidden');
+        document.getElementById('profileInitial').classList.add('hidden');
+    } else {
+        document.getElementById('profileImage').classList.add('hidden');
+        document.getElementById('profileInitial').classList.remove('hidden');
+    }
+    
+    // Update mood jika ada
+    if (currentUser.mood) {
+        const moodElement = document.querySelector(`[data-mood="${currentUser.mood}"]`);
+        if (moodElement) {
+            moodElement.classList.add('active');
+            document.getElementById('myMood').textContent = moodElement.textContent;
+        }
+    }
+    
+    // Update partner mood jika ada
+    if (currentPartner?.mood) {
+        const partnerMoodElement = document.querySelector(`[data-mood="${currentPartner.mood}"]`);
+        if (partnerMoodElement) {
+            document.getElementById('partnerMood').textContent = partnerMoodElement.textContent;
+        }
+    }
+}
+
+// Fungsi untuk mengupload foto profil
+async function uploadPhoto() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    
+    fileInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validasi file
+        if (file.size > 2 * 1024 * 1024) {
+            showNotification('Ukuran file terlalu besar (maksimal 2MB)', 'error');
+            return;
+        }
+
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            showNotification('Format file tidak didukung (hanya JPEG, PNG, WebP)', 'error');
+            return;
+        }
+
+        try {
+            showNotification('Mengupload foto...', 'info');
+            
+            // 1. Upload ke storage
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
+            const filePath = `profile_photos/${fileName}`;
+            
+            const { error: uploadError } = await supabase.storage
+                .from('profile-photos')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (uploadError) throw uploadError;
+            
+            // 2. Dapatkan URL publik
+            const { data: { publicUrl } } = supabase.storage
+                .from('profile-photos')
+                .getPublicUrl(filePath);
+            
+            // 3. Update database
+            const { error: updateError } = await supabase
+                .from('users')
+                .update({ 
+                    profile_picture_url: publicUrl,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', currentUser.id);
+            
+            if (updateError) throw updateError;
+            
+            // 4. Update UI di semua tempat
+            const timestamp = Date.now();
+            
+            // Update di header
+            const headerImg = document.getElementById('profileImage');
+            headerImg.src = publicUrl + '?t=' + timestamp;
+            headerImg.classList.remove('hidden');
+            document.getElementById('profileInitial').classList.add('hidden');
+            
+            // Update di modal
+            const modalImg = document.getElementById('profileModalImage');
+            modalImg.src = publicUrl + '?t=' + timestamp;
+            modalImg.style.display = 'block';
+            document.getElementById('profileModalInitial').style.display = 'none';
+            
+            // Update currentUser
+            currentUser.profile_picture_url = publicUrl;
+            
+            // Beri tahu pasangan tentang perubahan foto profil
+            if (currentUser.partner_id) {
+                await addNotificationToPartner(`Pasangan Anda telah mengubah foto profil`);
+            }
+            
+            showNotification('Foto profil berhasil diubah!', 'success');
+            
+        } catch (error) {
+            console.error('Upload failed:', error);
+            showNotification('Gagal mengupload foto: ' + error.message, 'error');
+        }
+    };
+    
+    fileInput.click();
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    try {
+        // 1. Coba login dengan Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (authError) {
+            // Handle error khusus
+            if (authError.message.includes('Email not confirmed')) {
+                showNotification('Email belum diverifikasi. Silakan cek email Anda atau hubungi admin.', 'error');
+            } else {
+                showNotification('Email atau password salah!', 'error');
+            }
+            console.error('Auth error:', authError);
+            return;
+        }
+
+        // 2. Dapatkan data user dari tabel 'users'
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', authData.user.id)
+            .single();
+            
+        if (userError) {
+            console.error('Error fetching user data:', userError);
+            
+            // Jika user ada di auth tapi tidak di tabel users, buat record
+            if (userError.code === 'PGRST116') { // Item not found
+                const { error: insertError } = await supabase
+                    .from('users')
+                    .insert([{
+                        id: authData.user.id,
+                        email: email,
+                        name: email.split('@')[0], // Default name
+                        created_at: new Date().toISOString()
+                    }]);
+                
+                if (insertError) throw insertError;
+                
+                // Coba lagi dapatkan data user
+                currentUser = { id: authData.user.id, email: email };
+            } else {
+                throw userError;
+            }
+        } else {
+            currentUser = userData;
+        }
+        
+        showMainApp();
+        loadUserData();
+        showNotification('Berhasil masuk!', 'success');
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Terjadi kesalahan saat masuk: ' + error.message, 'error');
+    }
+}
+
+// Tambahkan event listener
+document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
+
+// Fungsi untuk memuat notifikasi
+async function loadNotifications() {
+    try {
+        // Simulasi data notifikasi
+        const notifications = [
+            {
+                title: "Pasangan mengupdate mood",
+                message: "Pasangan sedang merasa bahagia hari ini",
+                icon: "😊",
+                time: "Baru saja"
+            },
+            {
+                title: "Rencana baru",
+                message: "Makan malam romantis besok",
+                icon: "🍽️",
+                time: "1 jam yang lalu"
+            }
+        ];
+        
+        // Dalam implementasi nyata, gunakan:
+        /*
+        const { data, error } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        const notifications = data;
+        */
+        
+        const notificationsList = document.getElementById('notificationsList');
+        notificationsList.innerHTML = '';
+        
+        if (notifications.length === 0) {
+            notificationsList.innerHTML = `
+                <div style="text-align: center; color: #999; margin-top: 20px;">
+                    <p>Belum ada notifikasi</p>
+                </div>
+            `;
+            return;
+        }
+        
+        notifications.forEach(notif => {
+            const notifElement = document.createElement('div');
+            notifElement.style.display = 'flex';
+            notifElement.style.justifyContent = 'space-between';
+            notifElement.style.padding = '10px 0';
+            notifElement.style.borderBottom = '1px solid var(--border-light)';
+            
+            notifElement.innerHTML = `
+                <div style="flex: 1;">
+                    <div style="font-weight: 500;">${notif.title}</div>
+                    <div style="font-size: 0.8rem; color: #666;">${notif.message}</div>
+                    <div style="font-size: 0.7rem; color: #999; margin-top: 5px;">${notif.time}</div>
+                </div>
+                <div style="font-size: 1.5rem; margin-left: 10px;">${notif.icon || '🔔'}</div>
+            `;
+            
+            notificationsList.appendChild(notifElement);
+        });
+        
+        // Reset badge notifikasi
+        document.getElementById('notificationBadge').classList.add('hidden');
+        
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        showNotification('Gagal memuat notifikasi', 'error');
+    }
+}
+
+        // Profile functions
+        async function loadUserProfile() {
+    if (!currentUser) return;
+    
+    // Update initial dan nama
+    document.getElementById('profileInitial').textContent = currentUser.name.charAt(0).toUpperCase();
+    document.getElementById('profileModalInitial').textContent = currentUser.name.charAt(0).toUpperCase();
+    document.getElementById('profileName').value = currentUser.name;
+    document.getElementById('profileEmail').value = currentUser.email;
+    document.getElementById('uniqueCode').value = currentUser.unique_code || '';
+    
+    // Update foto profil di header
+    if (currentUser.profile_picture_url) {
+        const profileImg = document.getElementById('profileImage');
+        profileImg.src = currentUser.profile_picture_url + '?t=' + Date.now(); // Cache busting
+        profileImg.classList.remove('hidden');
+        document.getElementById('profileInitial').classList.add('hidden');
+        
+        // Update foto profil di modal
+        const modalImg = document.getElementById('profileModalImage');
+        modalImg.src = currentUser.profile_picture_url + '?t=' + Date.now();
+        modalImg.style.display = 'block';
+        document.getElementById('profileModalInitial').style.display = 'none';
+    } else {
+        document.getElementById('profileImage').classList.add('hidden');
+        document.getElementById('profileInitial').classList.remove('hidden');
+        
+        document.getElementById('profileModalImage').style.display = 'none';
+        document.getElementById('profileModalInitial').style.display = 'flex';
+    }
+    
+    // Update tanggal hubungan jika ada
+    if (currentUser.relationship_date) {
+        document.getElementById('relationshipDate').value = currentUser.relationship_date;
+        relationshipStart = new Date(currentUser.relationship_date);
+        updateConnectionStatus();
+    }
+    
+    // Load info pasangan jika terhubung
+    if (currentUser.partner_id) {
+        await loadPartnerInfo();
+    }
+}
+
+async function loadPartnerInfo() {
+    if (!currentUser.partner_id) return;
+    
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', currentUser.partner_id)
+            .single();
+        
+        if (error) {
+            console.error('Error loading partner info:', error);
+            return;
+        }
+        
+        currentPartner = data;
+        
+        // Update nama pasangan
+        document.getElementById('partnerName').textContent = currentPartner.name;
+        
+        // Update mood pasangan jika ada
+        if (currentPartner.mood) {
+            const partnerMoodElement = document.querySelector(`[data-mood="${currentPartner.mood}"]`);
+            if (partnerMoodElement) {
+                document.getElementById('partnerMood').textContent = partnerMoodElement.textContent;
+            }
+        }
+        
+        // Anda bisa menambahkan elemen untuk menampilkan foto profil pasangan jika diperlukan
+        // Misalnya di bagian mood pasangan atau di tempat lain
+        
+        updateConnectionStatus();
+        
+    } catch (error) {
+        console.error('Error loading partner info:', error);
+    }
+}
+
+        async function saveProfile() {
+    if (!currentUser) return;
+    
+    try {
+        const name = document.getElementById('profileName').value;
+        const relationshipDate = document.getElementById('relationshipDate').value;
+        
+        // Update user in database
+        const { error } = await supabase
+            .from('users')
+            .update({
+                name: name,
+                relationship_date: relationshipDate
+            })
+            .eq('id', currentUser.id);
+        
+        if (error) {
+            console.error('Error updating profile:', error);
+            showNotification('Gagal menyimpan profil', 'error');
+            return;
+        }
+        
+        // Update local user data
+        currentUser.name = name;
+        currentUser.relationship_date = relationshipDate;
+        
+        if (relationshipDate) {
+            relationshipStart = new Date(relationshipDate);
+        }
+        
+        loadUserProfile();
+        showNotification('Profil berhasil disimpan!', 'success');
+        closeModal('profileModal');
+        
+    } catch (error) {
+        console.error('Error saving profile:', error);
+        showNotification('Terjadi kesalahan saat menyimpan', 'error');
+    }
+}
+
+        function copyUniqueCode() {
+            const codeInput = document.getElementById('uniqueCode');
+            codeInput.select();
+            document.execCommand('copy');
+            showNotification('Kode berhasil disalin!', 'success');
+        }
+
+        async function connectPartner() {
+    const partnerCode = document.getElementById('partnerCode').value;
+    if (!partnerCode) {
+        showNotification('Masukkan kode pasangan!', 'error');
+        return;
+    }
+    
+    try {
+        // Find partner by unique code
+        const { data: partnerData, error: partnerError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('unique_code', partnerCode)
+            .single();
+        
+        if (partnerError || !partnerData) {
+            showNotification('Kode pasangan tidak ditemukan!', 'error');
+            return;
+        }
+        
+        if (partnerData.id === currentUser.id) {
+            showNotification('Tidak bisa terhubung dengan diri sendiri!', 'error');
+            return;
+        }
+        
+        // Kirim permintaan hubungan (tidak langsung menyimpan partner_id)
+        const { error: requestError } = await supabase
+            .from('relationship_requests')
+            .insert([{
+                sender_id: currentUser.id,
+                receiver_id: partnerData.id,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (requestError) {
+            console.error('Error sending relationship request:', requestError);
+            showNotification('Gagal mengirim permintaan hubungan!', 'error');
+            return;
+        }
+        
+        // Kirim notifikasi ke pasangan
+        await addNotificationToPartner(
+            `${currentUser.name} ingin terhubung dengan Anda!`,
+            'relationship_request'
+        );
+        
+        showNotification('Permintaan hubungan terkirim!', 'success');
+        
+    } catch (error) {
+        console.error('Error connecting partner:', error);
+        showNotification('Terjadi kesalahan saat menghubungkan!', 'error');
+    }
+}
+
+        function updateConnectionStatus() {
+            const statusDiv = document.getElementById('connectionStatus');
+            if (currentUser.partnerId) {
+                statusDiv.innerHTML = '✅ Terhubung dengan pasangan';
+                statusDiv.style.background = '#d4edda';
+                statusDiv.style.color = '#155724';
+                document.getElementById('partnerName').textContent = currentPartner?.name || 'Pasangan';
+            } else {
+                statusDiv.innerHTML = '❌ Belum terhubung dengan pasangan';
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+            }
+        }
+
+        // Mood functions
+        function setupMoodSelector() {
+            document.querySelectorAll('.mood-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const mood = this.getAttribute('data-mood');
+                    selectMood(mood);
+                });
+            });
+        }
+
+        async function selectMood(mood) {
+    if (!currentUser) return;
+    
+    try {
+        // Update UI
+        document.querySelectorAll('.mood-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-mood="${mood}"]`).classList.add('active');
+        
+        // Update mood in database
+        const { error } = await supabase
+            .from('users')
+            .update({ mood: mood })
+            .eq('id', currentUser.id);
+        
+        if (error) {
+            console.error('Error updating mood:', error);
+            showNotification('Gagal mengupdate mood', 'error');
+            return;
+        }
+        
+        // Update local user data
+        currentUser.mood = mood;
+        document.getElementById('myMood').textContent = document.querySelector(`[data-mood="${mood}"]`).textContent;
+        
+        // Send mood to partner
+        await sendMoodToPartner(mood);
+        showNotification('Mood berhasil diupdate!', 'success');
+        
+    } catch (error) {
+        console.error('Error updating mood:', error);
+        showNotification('Terjadi kesalahan saat mengupdate mood', 'error');
+    }
+}
+
+        function sendMoodToPartner(mood) {
+            // In a real app, this would send the mood to the partner via database
+            console.log('Sending mood to partner:', mood);
+            
+            // Simulate partner mood update
+            setTimeout(() => {
+                addNotification('Pasangan mengupdate mood: ' + document.querySelector(`[data-mood="${mood}"]`).textContent);
+            }, 1000);
+        }
+
+        // Relationship timer
+        function startRelationshipTimer() {
+            setInterval(updateRelationshipTimer, 1000);
+        }
+
+        function updateRelationshipTimer() {
+            if (!relationshipStart) return;
+            
+            const now = new Date();
+            const diff = now - relationshipStart;
+            
+            const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
+            const months = Math.floor((diff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+            const days = Math.floor((diff % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            document.getElementById('timerYears').textContent = years;
+            document.getElementById('timerMonths').textContent = months;
+            document.getElementById('timerDays').textContent = days;
+            document.getElementById('timerHours').textContent = hours;
+            
+            const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+            document.getElementById('mainTimer').textContent = `${totalDays} Hari`;
+        }
+
+        // Calendar functions
+        async function generateCalendar() {
+    if (!currentUser) return;
+    
+    // Pastikan event sudah dimuat
+    await loadUserEvents();
+    
+    const calendar = document.getElementById('calendarGrid');
+    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    
+    document.getElementById('currentMonth').textContent = 
+        monthNames[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+    
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    calendar.innerHTML = '';
+    
+    // Tambahkan header hari
+    const dayHeaders = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    dayHeaders.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.textContent = day;
+        dayHeader.style.textAlign = 'center';
+        dayHeader.style.fontWeight = 'bold';
+        dayHeader.style.color = 'var(--primary-color)';
+        dayHeader.style.padding = '5px';
+        calendar.appendChild(dayHeader);
+    });
+    
+    // Tambahkan hari-hari kalender
+    for (let i = 0; i < 42; i++) {
+        const cellDate = new Date(startDate);
+        cellDate.setDate(startDate.getDate() + i);
+        
+        const dayCell = document.createElement('div');
+        dayCell.className = 'calendar-day';
+        dayCell.textContent = cellDate.getDate();
+        
+        // Format tanggal untuk komparasi
+        const dateStr = cellDate.toISOString().split('T')[0];
+        
+        // Cek apakah ada event di tanggal ini
+        const hasEvent = userEvents.some(event => event.event_date === dateStr);
+        
+        if (hasEvent) {
+            dayCell.classList.add('has-event');
+            
+            // Tambahkan tooltip
+            dayCell.title = 'Ada rencana di tanggal ini';
+            dayCell.style.position = 'relative';
+            
+            // Tambahkan indikator titik kecil
+            const dot = document.createElement('div');
+            dot.style.position = 'absolute';
+            dot.style.bottom = '5px';
+            dot.style.left = '50%';
+            dot.style.transform = 'translateX(-50%)';
+            dot.style.width = '6px';
+            dot.style.height = '6px';
+            dot.style.borderRadius = '50%';
+            dot.style.backgroundColor = 'var(--secondary-color)';
+            dayCell.appendChild(dot);
+        }
+        
+        if (cellDate.getMonth() !== currentDate.getMonth()) {
+            dayCell.style.opacity = '0.5';
+        }
+        
+        // Highlight hari ini
+        const today = new Date();
+        if (cellDate.toDateString() === today.toDateString()) {
+            dayCell.style.border = '2px solid var(--primary-color)';
+        }
+        
+        dayCell.addEventListener('click', () => selectDate(cellDate));
+        calendar.appendChild(dayCell);
+    }
+}
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            generateCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            generateCalendar();
+        }
+
+        function selectDate(date) {
+            selectedDate = date;
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            loadDateEvents(date);
+        }
+
+        function hasEvent(date) {
+            // Simulate checking for events
+            return date.getDate() === 14 || date.getDate() === 25;
+        }
+
+        function hasMemory(date) {
+            // Simulate checking for memories
+            return date.getDate() === 10 || date.getDate() === 20;
+        }
+
+        function loadDateEvents(date) {
+            const eventsDiv = document.getElementById('selectedDateEvents');
+            const dateStr = date.toLocaleDateString('id-ID');
+            
+            // Simulate loading events
+            eventsDiv.innerHTML = `
+                <h5>Rencana untuk ${dateStr}</h5>
+                <div style="margin-top: 10px;">
+                    <p style="color: #666;">Belum ada rencana untuk tanggal ini</p>
+                </div>
+            `;
+        }
+
+        function addEvent() {
+            document.getElementById('eventDate').value = selectedDate ? 
+                selectedDate.toISOString().split('T')[0] : '';
+            showModal('addEventModal');
+        }
+
+        function addMemory() {
+            document.getElementById('memoryDate').value = selectedDate ? 
+                selectedDate.toISOString().split('T')[0] : '';
+            showModal('addMemoryModal');
+        }
+
+        async function saveEvent() {
+    const title = document.getElementById('eventTitle').value;
+    const date = document.getElementById('eventDate').value;
+    const time = document.getElementById('eventTime').value;
+    const description = document.getElementById('eventDescription').value;
+    
+    if (!title || !date) {
+        showNotification('Judul dan tanggal harus diisi!', 'error');
+        return;
+    }
+    
+    try {
+        // Format tanggal untuk display
+        const eventDate = new Date(date);
+        const formattedDate = eventDate.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        // Simpan event ke database
+        const { data, error } = await supabase
+            .from('events')
+            .insert([{
+                user_id: currentUser.id,
+                title: title,
+                event_date: date,
+                event_time: time,
+                description: description,
+                created_at: new Date().toISOString()
+            }])
+            .select();
+        
+        if (error) throw error;
+        
+        // Update UI
+        showNotification('Rencana berhasil disimpan!', 'success');
+        closeModal('addEventModal');
+        
+        // Refresh data
+        await loadUpcomingEvents();
+        await generateCalendar();
+        
+        // Kirim notifikasi ke pasangan jika terhubung
+        if (currentUser.partner_id) {
+            await addNotificationToPartner(
+                `Pasangan Anda menambahkan rencana baru: ${title} pada ${formattedDate}`
+            );
+        }
+        
+    } catch (error) {
+        console.error('Error saving event:', error);
+        showNotification('Gagal menyimpan rencana: ' + error.message, 'error');
+    }
+}
+        async function saveMemory() {
+    const title = document.getElementById('memoryTitle').value;
+    const date = document.getElementById('memoryDate').value;
+    const story = document.getElementById('memoryStory').value;
+    const photo = document.getElementById('memoryPhoto').files[0];
+    
+    if (!title || !date) {
+        showNotification('Judul dan tanggal harus diisi!', 'error');
+        return;
+    }
+    
+    try {
+        let photoUrl = null;
+        
+        // Upload photo if exists
+        if (photo) {
+            const fileExt = photo.name.split('.').pop();
+            const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
+            const filePath = `memories/${fileName}`;
+            
+            // Pastikan bucket 'memories' sudah dibuat di Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('memories')
+                .upload(filePath, photo, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+            
+            if (uploadError) {
+                console.error('Error uploading photo:', uploadError);
+                showNotification('Gagal mengupload foto: ' + uploadError.message, 'error');
+                return;
+            }
+            
+            const { data: { publicUrl } } = supabase.storage
+                .from('memories')
+                .getPublicUrl(filePath);
+            
+            photoUrl = publicUrl;
+        }
+        
+        // Save memory to database
+        const { error } = await supabase
+            .from('memories')
+            .insert([{
+                user_id: currentUser.id,
+                title: title,
+                memory_date: date,
+                story: story,
+                photo_url: photoUrl,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            console.error('Error saving memory:', error);
+            showNotification('Gagal menyimpan kenangan: ' + error.message, 'error');
+            return;
+        }
+        
+        showNotification('Kenangan berhasil disimpan!', 'success');
+        await addNotification(`Kenangan baru: ${title}`);
+        
+        // Reset form
+        document.getElementById('memoryTitle').value = '';
+        document.getElementById('memoryDate').value = '';
+        document.getElementById('memoryStory').value = '';
+        document.getElementById('memoryPhoto').value = '';
+        
+        closeModal('addMemoryModal');
+        generateCalendar();
+        
+    } catch (error) {
+        console.error('Error saving memory:', error);
+        showNotification('Terjadi kesalahan saat menyimpan kenangan', 'error');
+    }
+}
+
+// Savings functions
+function createSavingsTarget() {
+    showModal('savingsTargetModal');
+}
+
+async function saveSavingsTarget() {
+    const name = document.getElementById('targetName').value;
+    const amount = parseFloat(document.getElementById('targetAmount').value);
+    const description = document.getElementById('targetDescription').value;
+    
+    if (!name) {
+        showNotification('Nama target harus diisi!', 'error');
+        return;
+    }
+    
+    if (!amount || isNaN(amount) || amount <= 0) {
+        showNotification('Masukkan target amount yang valid!', 'error');
+        return;
+    }
+    
+    try {
+        // Save target to database
+        const { error } = await supabase
+            .from('savings_targets')
+            .insert([{
+                user_id: currentUser.id,
+                name: name,
+                target_amount: amount,
+                description: description,
+                current_amount: 0,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            console.error('Error saving target:', error);
+            showNotification('Gagal menyimpan target tabungan!', 'error');
+            return;
+        }
+        
+        showNotification('Target tabungan berhasil dibuat!', 'success');
+        
+        // Reset form
+        document.getElementById('targetName').value = '';
+        document.getElementById('targetAmount').value = '';
+        document.getElementById('targetDescription').value = '';
+        
+        closeModal('savingsTargetModal');
+        loadSavingsData();
+        
+    } catch (error) {
+        console.error('Error saving target:', error);
+        showNotification('Terjadi kesalahan saat menyimpan target!', 'error');
+    }
+}
+
+async function loadSavingsData() {
+    if (!currentUser) return;
+    
+    try {
+        // Load savings targets
+        const { data: targets, error: targetsError } = await supabase
+            .from('savings_targets')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (targetsError) {
+            console.error('Error loading targets:', targetsError);
+            return;
+        }
+        
+        // Load savings for each target
+        const targetsWithSavings = await Promise.all(
+            (targets || []).map(async (target) => {
+                const { data: savings, error: savingsError } = await supabase
+                    .from('savings')
+                    .select('amount')
+                    .eq('target_id', target.id);
+                
+                if (savingsError) {
+                    console.error('Error loading savings:', savingsError);
+                    return target;
+                }
+                
+                const currentAmount = savings?.reduce((sum, s) => sum + s.amount, 0) || 0;
+                return { ...target, current_amount: currentAmount };
+            })
+        );
+        
+        // Update UI with targets
+        displaySavingsTargets(targetsWithSavings);
+        
+        // Update savings target select options
+        updateSavingsTargetSelect(targetsWithSavings);
+        
+    } catch (error) {
+        console.error('Error loading savings data:', error);
+    }
+}
+
+function displaySavingsTargets(targets) {
+    const container = document.getElementById('savingsTargetsContainer');
+    if (!container) return;
+    
+    if (targets.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; color: #666; margin-top: 20px;">
+                <p>Belum ada target tabungan</p>
+                <button onclick="createSavingsTarget()" style="margin-top: 10px; padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Buat Target Pertama
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = targets.map(target => {
+        const progress = (target.current_amount / target.target_amount) * 100;
+        return `
+            <div style="border: 1px solid var(--border-light); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                <h4>${target.name}</h4>
+                <div style="margin: 10px 0;">
+                    <div class="progress-bar" style="background: #eee; height: 20px; border-radius: 10px; overflow: hidden;">
+                        <div class="progress-fill" style="width: ${Math.min(progress, 100)}%; height: 100%; background: var(--primary-color); transition: width 0.3s ease;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.9rem;">
+                        <span>Rp ${target.current_amount.toLocaleString('id-ID')}</span>
+                        <span>Rp ${target.target_amount.toLocaleString('id-ID')}</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button onclick="showSavingsDetail('${target.id}')" style="flex: 1; padding: 8px; background: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        Detail
+                    </button>
+                    <button onclick="quickAddSavings('${target.id}')" style="flex: 1; padding: 8px; background: var(--secondary-color); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        Tambah
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateSavingsTargetSelect(targets) {
+    const select = document.getElementById('savingsTargetSelect');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Pilih Target Tabungan</option>';
+    targets.forEach(target => {
+        const option = document.createElement('option');
+        option.value = target.id;
+        option.textContent = target.name;
+        select.appendChild(option);
+    });
+}
+
+function addSavings() {
+    showModal('addSavingsModal');
+}
+
+async function addSavingsAmount() {
+    const targetId = document.getElementById('savingsTargetSelect').value;
+    const amount = parseFloat(document.getElementById('savingsAmount').value);
+    const note = document.getElementById('savingsNote').value;
+    
+    if (!amount || isNaN(amount) || amount <= 0) {
+        showNotification('Masukkan jumlah yang valid!', 'error');
+        return;
+    }
+    
+    if (!targetId) {
+        showNotification('Pilih target tabungan!', 'error');
+        return;
+    }
+    
+    try {
+        // Save to savings table
+        const { error: savingsError } = await supabase
+            .from('savings')
+            .insert([{
+                user_id: currentUser.id,
+                target_id: targetId,
+                amount: amount,
+                note: note,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (savingsError) {
+            console.error('Error saving savings:', savingsError);
+            showNotification('Gagal menyimpan tabungan!', 'error');
+            return;
+        }
+        
+        // Add notification
+        await addNotification(
+            `Menabung Rp ${amount.toLocaleString('id-ID')} untuk ${targetId}`,
+            'savings'
+        );
+        
+        showNotification('Tabungan berhasil ditambahkan!', 'success');
+        
+        // Reset form
+        document.getElementById('savingsAmount').value = '';
+        document.getElementById('savingsNote').value = '';
+        
+        closeModal('addSavingsModal');
+        loadSavingsData();
+        
+    } catch (error) {
+        console.error('Error adding savings:', error);
+        showNotification('Terjadi kesalahan saat menyimpan tabungan!', 'error');
+    }
+}
+
+function showSavingsDetail(targetId) {
+    // Simulate loading savings detail
+    const detailContent = `
+        <h4>Detail Tabungan</h4>
+        <p style="margin-top: 10px;">Liburan Bersama</p>
+        <div style="margin: 20px 0;">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 65%"></div>
+            </div>
+            <div class="savings-details" style="margin-top: 10px;">
+                <div class="savings-amount">
+                    <div class="amount-value">Rp 3.250.000</div>
+                    <div class="amount-label">Terkumpul dari Rp 5.000.000</div>
+                </div>
+            </div>
+        </div>
+        <h5 style="margin-bottom: 10px;">Riwayat Terakhir</h5>
+        <div style="max-height: 200px; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-light);">
+                <div>
+                    <div style="font-weight: 500;">Kamu</div>
+                    <div style="font-size: 0.8rem; color: #666;">Hari ini</div>
+                </div>
+                <div style="color: var(--primary-color); font-weight: 500;">Rp 200.000</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-light);">
+                <div>
+                    <div style="font-weight: 500;">Pasangan</div>
+                    <div style="font-size: 0.8rem; color: #666;">Kemarin</div>
+                </div>
+                <div style="color: var(--secondary-color); font-weight: 500;">Rp 150.000</div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('savingsDetailContent').innerHTML = detailContent;
+    showModal('savingsDetailModal');
+}
+
+function showSavingsHistory() {
+    // Simulate loading savings history
+    const historyContent = `
+        <h4>Riwayat Tabungan</h4>
+        <div style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-light);">
+                <div>
+                    <div style="font-weight: 500;">Liburan Bersama</div>
+                    <div style="font-size: 0.8rem; color: #666;">Kamu - Hari ini</div>
+                </div>
+                <div style="color: var(--primary-color); font-weight: 500;">Rp 200.000</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-light);">
+                <div>
+                    <div style="font-weight: 500;">Liburan Bersama</div>
+                    <div style="font-size: 0.8rem; color: #666;">Pasangan - Kemarin</div>
+                </div>
+                <div style="color: var(--secondary-color); font-weight: 500;">Rp 150.000</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-light);">
+                <div>
+                    <div style="font-weight: 500;">Hadiah Anniversary</div>
+                    <div style="font-size: 0.8rem; color: #666;">Kamu - 3 hari lalu</div>
+                </div>
+                <div style="color: var(--primary-color); font-weight: 500;">Rp 100.000</div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('savingsHistoryContent').innerHTML = historyContent;
+    showModal('savingsHistoryModal');
+}
+
+// Notification functions
+async function loadNotifications() {
+    if (!currentUser) return;
+    
+    try {
+        const { data, error } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false })
+            .limit(20);
+        
+        if (error) {
+            console.error('Error loading notifications:', error);
+            return;
+        }
+        
+        const notifications = data || [];
+        
+        const notificationsList = document.getElementById('notificationsList');
+        notificationsList.innerHTML = '';
+        
+        if (notifications.length === 0) {
+            notificationsList.innerHTML = `
+                <div style="text-align: center; color: #999; margin-top: 20px;">
+                    <p>Belum ada notifikasi</p>
+                </div>
+            `;
+            return;
+        }
+        
+        notifications.forEach(notif => {
+            const notifElement = document.createElement('div');
+            notifElement.style.display = 'flex';
+            notifElement.style.justifyContent = 'space-between';
+            notifElement.style.padding = '10px 0';
+            notifElement.style.borderBottom = '1px solid var(--border-light)';
+            
+            const timeAgo = getTimeAgo(new Date(notif.created_at));
+            const icon = getNotificationIcon(notif.type);
+            
+            notifElement.innerHTML = `
+                <div style="flex: 1;">
+                    <div style="font-weight: 500;">${notif.title || 'Notifikasi'}</div>
+                    <div style="font-size: 0.8rem; color: #666;">${notif.message}</div>
+                    <div style="font-size: 0.7rem; color: #999; margin-top: 5px;">${timeAgo}</div>
+                </div>
+                <div style="font-size: 1.5rem; margin-left: 10px;">${icon}</div>
+            `;
+            
+            notificationsList.appendChild(notifElement);
+        });
+        
+        // Mark notifications as read
+        await supabase
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('user_id', currentUser.id)
+            .eq('is_read', false);
+        
+        // Reset badge
+        document.getElementById('notificationBadge').classList.add('hidden');
+        
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Baru saja';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
+    return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
+}
+
+function getNotificationIcon(type) {
+    switch (type) {
+        case 'mood': return '😊';
+        case 'event': return '📅';
+        case 'memory': return '💭';
+        case 'savings': return '💰';
+        default: return '🔔';
+    }
+}
+
+function addNotification(message) {
+    // Simulate adding notification
+    const badge = document.getElementById('notificationBadge');
+    const currentCount = parseInt(badge.textContent) || 0;
+    badge.textContent = currentCount + 1;
+    badge.classList.remove('hidden');
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.position = 'fixed';
+    notification.style.bottom = '20px';
+    notification.style.left = '50%';
+    notification.style.transform = 'translateX(-50%)';
+    notification.style.padding = '15px 25px';
+    notification.style.borderRadius = '10px';
+    notification.style.zIndex = '1000';
+    notification.style.color = 'white';
+    notification.style.fontWeight = '500';
+    notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+    notification.style.animation = 'slideUp 0.3s ease forwards';
+    
+    if (type === 'success') {
+        notification.style.background = 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))';
+    } else if (type === 'error') {
+        notification.style.background = '#dc3545';
+    } else {
+        notification.style.background = '#333';
+    }
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideDown 0.3s ease forwards';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Settings functions
+function changeTheme() {
+    const theme = document.getElementById('themeSelect').value;
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+}
+
+async function logout() {
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error('Error signing out:', error);
+        }
+        
+        currentUser = null;
+        showLogin();
+        showNotification('Berhasil keluar', 'success');
+        
+    } catch (error) {
+        console.error('Logout error:', error);
+        currentUser = null;
+        showLogin();
+        showNotification('Berhasil keluar', 'success');
+    }
+}
+
+// Utility functions
+function generateUniqueId() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+function generateUniqueCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// Initialize Supabase with your credentials
+function initializeSupabase() {
+    // Replace with your Supabase URL and API key
+    const SUPABASE_URL = 'https://your-project.supabase.co';
+    const SUPABASE_KEY = 'your-supabase-key';
+    
+    // In a real app, you would use the Supabase client library
+    // For this demo, we'll simulate the database operations
+    console.log('Supabase initialized with URL:', SUPABASE_URL);
+    
+    // Example of how you would initialize Supabase in a real app:
+    /*
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Example query
+    async function getEvents() {
+        const { data, error } = await supabase
+            .from('events')
+            .select('*')
+            .eq('user_id', currentUser.id);
+        
+        if (error) {
+            console.error('Error fetching events:', error);
+            return [];
+        }
+        
+        return data;
+    }
+    */
+    
+    return {
+        // You would add your database methods here
+        getEvents: () => Promise.resolve([]),
+        getMemories: () => Promise.resolve([]),
+        getSavings: () => Promise.resolve([]),
+        getNotifications: () => Promise.resolve([]),
+        // etc.
+    };
+}
+
+// Initialize Supabase when the app starts
+const supabaseClient = initializeSupabase();
+
+// Additional animations
+document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(0); opacity: 1; }
+            to { transform: translateX(-50%) translateY(20px); opacity: 0; }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 0.3s ease forwards;
+        }
+        
+        .slide-in-left {
+            animation: slideInLeft 0.3s ease forwards;
+        }
+    </style>
+`);
+
+async function hasEvent(date) {
+    if (!currentUser) return false;
+    
+    const dateStr = date.toISOString().split('T')[0];
+    return userEvents.some(event => event.event_date === dateStr);
+}
+
+async function loadUserEvents() {
+    if (!currentUser) return;
+    
+    try {
+        // Dapatkan event dari user dan pasangan (jika terhubung)
+        let query = supabase
+            .from('events')
+            .select('*')
+            .or(`user_id.eq.${currentUser.id}${currentUser.partner_id ? `,user_id.eq.${currentUser.partner_id}` : ''}`);
+        
+        const { data, error } = await query;
+        
+        if (error) {
+            console.error('Error loading events:', error);
+            return;
+        }
+        
+        userEvents = data || [];
+        
+    } catch (error) {
+        console.error('Error loading events:', error);
+    }
+}
+
+async function loadDateEvents(date) {
+    const eventsDiv = document.getElementById('selectedDateEvents');
+    const dateStr = date.toISOString().split('T')[0];
+    
+    try {
+        // Dapatkan event dari user dan pasangan (jika terhubung)
+        let query = supabase
+            .from('events')
+            .select('*')
+            .or(`user_id.eq.${currentUser.id}${currentUser.partner_id ? `,user_id.eq.${currentUser.partner_id}` : ''}`)
+            .eq('event_date', dateStr)
+            .order('event_time', { ascending: true });
+        
+        const { data, error } = await query;
+        
+        if (error) {
+            console.error('Error loading date events:', error);
+            return;
+        }
+        
+        const events = data || [];
+        const dateFormatted = date.toLocaleDateString('id-ID');
+        
+        if (events.length === 0) {
+            eventsDiv.innerHTML = `
+                <h5>Rencana untuk ${dateFormatted}</h5>
+                <div style="margin-top: 10px;">
+                    <p style="color: #666;">Belum ada rencana untuk tanggal ini</p>
+                </div>
+            `;
+        } else {
+            eventsDiv.innerHTML = `
+                <h5>Rencana untuk ${dateFormatted}</h5>
+                <div style="margin-top: 10px;">
+                    ${events.map(event => {
+                        const isCurrentUser = event.user_id === currentUser.id;
+                        const creatorText = isCurrentUser ? 'Anda' : currentPartner?.name || 'Pasangan';
+                        
+                        return `
+                            <div style="border: 1px solid var(--border-light); border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="font-weight: 500; color: var(--primary-color);">${event.title}</div>
+                                    <span style="font-size: 0.7rem; background: ${isCurrentUser ? 'var(--primary-color)' : 'var(--secondary-color)'}; 
+                                          color: white; padding: 2px 5px; border-radius: 10px;">
+                                        ${creatorText}
+                                    </span>
+                                </div>
+                                ${event.event_time ? `<div style="font-size: 0.8rem; color: #666; margin-top: 5px;">⏰ ${event.event_time}</div>` : ''}
+                                ${event.description ? `<div style="font-size: 0.9rem; margin-top: 5px;">${event.description}</div>` : ''}
+                                ${isCurrentUser ? `<button onclick="deleteEvent('${event.id}')" style="margin-top: 5px; background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 0.8rem;">Hapus</button>` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('Error loading date events:', error);
+        eventsDiv.innerHTML = `
+            <h5>Rencana untuk ${dateFormatted}</h5>
+            <div style="margin-top: 10px;">
+                <p style="color: #666;">Terjadi kesalahan memuat rencana</p>
+            </div>
+        `;
+    }
+}
+
+async function loadUserMemories() {
+    try {
+        const { data, error } = await supabase
+            .from('memories')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('memory_date', { ascending: false });
+        
+        if (error) {
+            console.error('Error loading memories:', error);
+            return [];
+        }
+        
+        return data || [];
+    } catch (error) {
+        console.error('Error loading memories:', error);
+        return [];
+    }
+}
+
+async function loadUserSavings() {
+    try {
+        const { data, error } = await supabase
+            .from('savings')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Error loading savings:', error);
+            return [];
+        }
+        
+        return data || [];
+    } catch (error) {
+        console.error('Error loading savings:', error);
+        return [];
+    }
+}
+
+async function addNotification(message, type = 'info') {
+    try {
+        const { error } = await supabase
+            .from('notifications')
+            .insert([{
+                user_id: currentUser.id,
+                message: message,
+                type: type,
+                is_read: false,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            console.error('Error adding notification:', error);
+        }
+        
+        // Update UI badge
+        const badge = document.getElementById('notificationBadge');
+        const currentCount = parseInt(badge.textContent) || 0;
+        badge.textContent = currentCount + 1;
+        badge.classList.remove('hidden');
+        
+    } catch (error) {
+        console.error('Error adding notification:', error);
+    }
+}
+
+async function addNotificationToPartner(message) {
+    if (!currentUser.partner_id) return;
+    
+    try {
+        await supabase
+            .from('notifications')
+            .insert([{
+                user_id: currentUser.partner_id,
+                message: message,
+                type: 'profile',
+                is_read: false,
+                created_at: new Date().toISOString()
+            }]);
+    } catch (error) {
+        console.error('Error sending notification to partner:', error);
+    }
+}
+
+function addEventToReminderContainer(event, formattedDate, isCurrentUser = true) {
+    const reminderList = document.getElementById('reminderList');
+    
+    // Hapus pesan "Belum ada rencana" jika ada
+    if (reminderList.querySelector('p')) {
+        reminderList.innerHTML = '';
+    }
+    
+    // Buat elemen rencana baru
+    const eventElement = document.createElement('div');
+    eventElement.className = 'reminder-item';
+    eventElement.style.border = '1px solid var(--border-light)';
+    eventElement.style.borderRadius = '10px';
+    eventElement.style.padding = '10px';
+    eventElement.style.marginBottom = '10px';
+    
+    const creatorText = isCurrentUser ? 'Anda' : currentPartner?.name || 'Pasangan';
+    
+    eventElement.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                    <strong style="color: var(--primary-color);">${event.title}</strong>
+                    <span style="font-size: 0.7rem; background: ${isCurrentUser ? 'var(--primary-color)' : 'var(--secondary-color)'}; 
+                          color: white; padding: 2px 5px; border-radius: 10px;">
+                        ${creatorText}
+                    </span>
+                </div>
+                <div style="font-size: 0.8rem; color: #666;">
+                    📅 ${formattedDate} ${event.event_time ? '⏰ ' + event.event_time : ''}
+                </div>
+                ${event.description ? `<p style="margin-top: 5px; font-size: 0.9rem;">${event.description}</p>` : ''}
+            </div>
+            ${isCurrentUser ? `<button onclick="deleteEvent('${event.id}')" style="background: none; border: none; color: #ff6b6b; cursor: pointer; padding: 5px;">✕</button>` : ''}
+        </div>
+    `;
+    
+    // Tambahkan ke daftar teratas
+    reminderList.prepend(eventElement);
+}
+
+
+async function loadUpcomingEvents() {
+    if (!currentUser) return;
+    
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Dapatkan event dari user dan pasangan (jika terhubung)
+        let query = supabase
+            .from('events')
+            .select('*')
+            .or(`user_id.eq.${currentUser.id}${currentUser.partner_id ? `,user_id.eq.${currentUser.partner_id}` : ''}`)
+            .gte('event_date', today)
+            .order('event_date', { ascending: true })
+            .limit(5);
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        const reminderList = document.getElementById('reminderList');
+        reminderList.innerHTML = '';
+        
+        if (data.length === 0) {
+            reminderList.innerHTML = '<p style="color: #999; text-align: center; margin-top: 15px;">Belum ada rencana</p>';
+            return;
+        }
+        
+        data.forEach(event => {
+            const eventDate = new Date(event.event_date);
+            const formattedDate = eventDate.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            
+            addEventToReminderContainer(event, formattedDate, event.user_id === currentUser.id);
+        });
+        
+    } catch (error) {
+        console.error('Error loading upcoming events:', error);
+        const reminderList = document.getElementById('reminderList');
+        reminderList.innerHTML = '<p style="color: #ff6b6b; text-align: center; margin-top: 15px;">Gagal memuat rencana</p>';
+    }
+}
+
+async function deleteEvent(eventId) {
+    try {
+        const { error } = await supabase
+            .from('events')
+            .delete()
+            .eq('id', eventId)
+            .eq('user_id', currentUser.id);
+        
+        if (error) throw error;
+        
+        showNotification('Rencana berhasil dihapus!', 'success');
+        
+        // Refresh tampilan
+        await generateCalendar();
+        await loadUpcomingEvents();
+        
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        showNotification('Gagal menghapus rencana', 'error');
+    }
+}
+
+function showRomanticModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content romantic-modal">
+            <div class="modal-header">
+                <h3>Selamat! 💖</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <div class="romantic-heart">💕</div>
+            <p>Kalian sekarang resmi terhubung sebagai pasangan!</p>
+            <p>Mulai isi tanggal jadian kalian untuk memulai perjalanan romantis ini.</p>
+            <button class="btn btn-primary" onclick="showDatingDateForm()" style="margin-top: 20px;">Isi Tanggal Jadian</button>
+            
+            <!-- Confetti elements will be added here -->
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add confetti
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'romantic-confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        modal.querySelector('.modal-content').appendChild(confetti);
+    }
+}
+
+function showDatingDateForm() {
+    closeModal('profileModal');
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tanggal Jadian</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <p>Masukkan tanggal resmi kalian mulai berpacaran:</p>
+            <div class="form-group">
+                <input type="date" id="officialDatingDate" class="form-control">
+            </div>
+            <button class="btn btn-primary" onclick="saveDatingDate()">Simpan</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function saveDatingDate() {
+    const datingDate = document.getElementById('officialDatingDate').value;
+    if (!datingDate) {
+        showNotification('Harap isi tanggal jadian!', 'error');
+        return;
+    }
+    
+    try {
+        // Update both users' relationship date
+        const { error: updateError1 } = await supabase
+            .from('users')
+            .update({ 
+                relationship_date: datingDate,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', currentUser.id);
+        
+        const { error: updateError2 } = await supabase
+            .from('users')
+            .update({ 
+                relationship_date: datingDate,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', currentUser.partner_id);
+        
+        if (updateError1 || updateError2) {
+            throw updateError1 || updateError2;
+        }
+        
+        // Update local data
+        currentUser.relationship_date = datingDate;
+        relationshipStart = new Date(datingDate);
+        
+        // Close modal
+        document.querySelector('.modal.active').remove();
+        
+        // Show success message
+        showNotification('Tanggal jadian berhasil disimpan!', 'success');
+        
+        // Update UI
+        updateProfileAfterConnection();
+        
+    } catch (error) {
+        console.error('Error saving dating date:', error);
+        showNotification('Gagal menyimpan tanggal jadian', 'error');
+    }
+}
+
+async function checkRelationshipStatus() {
+    if (!currentUser) return;
+    
+    try {
+        // Cek apakah ada permintaan hubungan yang diterima
+        const { data: requests, error } = await supabase
+            .from('relationship_requests')
+            .select('*')
+            .eq('receiver_id', currentUser.id)
+            .eq('status', 'pending');
+        
+        if (error) throw error;
+        
+        if (requests && requests.length > 0) {
+            // Tampilkan dialog konfirmasi
+            const request = requests[0];
+            if (confirm(`${request.sender_name} ingin terhubung dengan Anda. Terima hubungan ini?`)) {
+                // Terima hubungan
+                await acceptRelationship(request);
+            } else {
+                // Tolak hubungan
+                await rejectRelationship(request);
+            }
+        }
+        
+        // Cek apakah permintaan kita sudah diterima
+        const { data: myRequests, error: myRequestsError } = await supabase
+            .from('relationship_requests')
+            .select('*')
+            .eq('sender_id', currentUser.id)
+            .eq('status', 'accepted');
+        
+        if (myRequestsError) throw myRequestsError;
+        
+        if (myRequests && myRequests.length > 0) {
+            const acceptedRequest = myRequests[0];
+            
+            // Update partner_id di database
+            const { error: updateError1 } = await supabase
+                .from('users')
+                .update({ partner_id: acceptedRequest.receiver_id })
+                .eq('id', currentUser.id);
+            
+            const { error: updateError2 } = await supabase
+                .from('users')
+                .update({ partner_id: currentUser.id })
+                .eq('id', acceptedRequest.receiver_id);
+            
+            if (updateError1 || updateError2) {
+                throw updateError1 || updateError2;
+            }
+            
+            // Update local data
+            currentUser.partner_id = acceptedRequest.receiver_id;
+            await loadPartnerInfo();
+            
+            // Tampilkan modal romantis
+            showRomanticModal();
+            
+            // Hapus request yang sudah diproses
+            await supabase
+                .from('relationship_requests')
+                .delete()
+                .eq('id', acceptedRequest.id);
+        }
+        
+    } catch (error) {
+        console.error('Error checking relationship status:', error);
+    }
+}
+
+async function acceptRelationship(request) {
+    try {
+        // Update status request
+        const { error: updateError } = await supabase
+            .from('relationship_requests')
+            .update({ 
+                status: 'accepted',
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', request.id);
+        
+        if (updateError) throw updateError;
+        
+        // Kirim notifikasi ke pengirim
+        await addNotificationToPartner(
+            `${currentUser.name} telah menerima permintaan hubungan Anda!`,
+            'relationship_accepted'
+        );
+        
+        showNotification('Hubungan diterima!', 'success');
+        
+    } catch (error) {
+        console.error('Error accepting relationship:', error);
+        showNotification('Gagal menerima hubungan', 'error');
+    }
+}
+
+async function rejectRelationship(request) {
+    try {
+        // Update status request
+        const { error: updateError } = await supabase
+            .from('relationship_requests')
+            .update({ 
+                status: 'rejected',
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', request.id);
+        
+        if (updateError) throw updateError;
+        
+        // Kirim notifikasi ke pengirim
+        await addNotificationToPartner(
+            `${currentUser.name} telah menolak permintaan hubungan Anda.`,
+            'relationship_rejected'
+        );
+        
+        showNotification('Hubungan ditolak.', 'info');
+        
+    } catch (error) {
+        console.error('Error rejecting relationship:', error);
+    }
+}
+
+function updateProfileAfterConnection() {
+    if (!currentUser.partner_id) return;
+    
+    // Update connection status
+    updateConnectionStatus();
+    
+    // Update profile display
+    const profileSection = document.querySelector('#profileModal .modal-content');
+    profileSection.innerHTML = `
+        <div class="modal-header">
+            <h3>Profil Pasangan</h3>
+            <button class="modal-close" onclick="closeModal('profileModal')">&times;</button>
+        </div>
+        
+        <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+            <!-- User Profile -->
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; overflow: hidden; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    ${currentUser.profile_picture_url ? 
+                      `<img src="${currentUser.profile_picture_url}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                      currentUser.name.charAt(0).toUpperCase()}
+                </div>
+                <h4>${currentUser.name}</h4>
+            </div>
+            
+            <!-- Heart Icon -->
+            <div style="display: flex; align-items: center; font-size: 2rem;">❤️</div>
+            
+            <!-- Partner Profile -->
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; overflow: hidden; background: var(--secondary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    ${currentPartner.profile_picture_url ? 
+                      `<img src="${currentPartner.profile_picture_url}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                      currentPartner.name.charAt(0).toUpperCase()}
+                </div>
+                <h4>${currentPartner.name}</h4>
+            </div>
+        </div>
+        
+        <div class="relationship-info" style="text-align: center; margin-bottom: 20px;">
+            <h4>Sejak ${formatDate(currentUser.relationship_date)}</h4>
+            <div class="timer-display" id="profileTimer">0 Hari</div>
+        </div>
+        
+        <div class="form-group">
+            <label>Tanggal Pacaran</label>
+            <input type="date" id="relationshipDate" value="${currentUser.relationship_date || ''}">
+        </div>
+        
+        <button class="btn btn-primary" onclick="saveProfile()">Simpan Perubahan</button>
+        <button class="btn btn-secondary" onclick="disconnectPartner()" style="margin-top: 10px; background: #dc3545;">Putuskan Hubungan</button>
+    `;
+    
+    // Update timer
+    if (currentUser.relationship_date) {
+        relationshipStart = new Date(currentUser.relationship_date);
+        updateRelationshipTimer();
+    }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+    });
+}
+
+async function disconnectPartner() {
+    if (!confirm('Apakah Anda yakin ingin memutuskan hubungan?')) return;
+    
+    try {
+        // Update both users in database
+        const { error: updateError1 } = await supabase
+            .from('users')
+            .update({ partner_id: null, relationship_date: null })
+            .eq('id', currentUser.id);
+        
+        const { error: updateError2 } = await supabase
+            .from('users')
+            .update({ partner_id: null, relationship_date: null })
+            .eq('id', currentUser.partner_id);
+        
+        if (updateError1 || updateError2) {
+            throw updateError1 || updateError2;
+        }
+        
+        // Update local data
+        currentUser.partner_id = null;
+        currentUser.relationship_date = null;
+        currentPartner = null;
+        relationshipStart = null;
+        
+        // Reload profile
+        loadUserProfile();
+        showNotification('Hubungan berhasil diputuskan', 'info');
+        
+    } catch (error) {
+        console.error('Error disconnecting partner:', error);
+        showNotification('Gagal memutuskan hubungan', 'error');
+    }
+}
+</script>
