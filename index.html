@@ -1951,20 +1951,22 @@ async function loadPartnerInfo() {
         const name = document.getElementById('profileName').value;
         const relationshipDate = document.getElementById('relationshipDate').value;
         
+        // Validasi tanggal
+        if (relationshipDate && !isValidDate(relationshipDate)) {
+            showNotification('Format tanggal tidak valid!', 'error');
+            return;
+        }
+
         // Update user in database
         const { error } = await supabase
             .from('users')
             .update({
                 name: name,
-                relationship_date: relationshipDate
+                relationship_date: relationshipDate || null
             })
             .eq('id', currentUser.id);
         
-        if (error) {
-            console.error('Error updating profile:', error);
-            showNotification('Gagal menyimpan profil', 'error');
-            return;
-        }
+        if (error) throw error;
         
         // Update local user data
         currentUser.name = name;
@@ -1974,14 +1976,20 @@ async function loadPartnerInfo() {
             relationshipStart = new Date(relationshipDate);
         }
         
-        loadUserProfile();
         showNotification('Profil berhasil disimpan!', 'success');
         closeModal('profileModal');
         
     } catch (error) {
         console.error('Error saving profile:', error);
-        showNotification('Terjadi kesalahan saat menyimpan', 'error');
+        showNotification('Gagal menyimpan profil: ' + error.message, 'error');
     }
+}
+
+function isValidDate(dateString) {
+    const regEx = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateString.match(regEx)) return false;
+    const d = new Date(dateString);
+    return d instanceof Date && !isNaN(d);
 }
 
         function copyUniqueCode() {
@@ -1999,10 +2007,10 @@ async function loadPartnerInfo() {
     }
     
     try {
-        // Find partner by unique code
+        // 1. Cari pasangan berdasarkan kode unik
         const { data: partnerData, error: partnerError } = await supabase
             .from('users')
-            .select('*')
+            .select('id, name, email')
             .eq('unique_code', partnerCode)
             .single();
         
@@ -2016,33 +2024,48 @@ async function loadPartnerInfo() {
             return;
         }
         
-        // Kirim permintaan hubungan (tidak langsung menyimpan partner_id)
+        // 2. Cek apakah sudah ada permintaan sebelumnya
+        const { data: existingRequest, error: existingError } = await supabase
+            .from('relationship_requests')
+            .select('*')
+            .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${partnerData.id}),and(sender_id.eq.${partnerData.id},receiver_id.eq.${currentUser.id})`);
+        
+        if (existingError) throw existingError;
+        
+        if (existingRequest && existingRequest.length > 0) {
+            const request = existingRequest[0];
+            if (request.status === 'pending') {
+                showNotification('Permintaan hubungan sudah dikirim sebelumnya!', 'info');
+                return;
+            } else if (request.status === 'accepted') {
+                showNotification('Anda sudah terhubung dengan pasangan ini!', 'info');
+                return;
+            }
+        }
+        
+        // 3. Kirim permintaan hubungan baru
         const { error: requestError } = await supabase
             .from('relationship_requests')
             .insert([{
                 sender_id: currentUser.id,
                 receiver_id: partnerData.id,
-                status: 'pending',
-                created_at: new Date().toISOString()
+                status: 'pending'
             }]);
         
-        if (requestError) {
-            console.error('Error sending relationship request:', requestError);
-            showNotification('Gagal mengirim permintaan hubungan!', 'error');
-            return;
-        }
+        if (requestError) throw requestError;
         
-        // Kirim notifikasi ke pasangan
+        // 4. Kirim notifikasi ke pasangan
         await addNotificationToPartner(
             `${currentUser.name} ingin terhubung dengan Anda!`,
-            'relationship_request'
+            'relationship_request',
+            partnerData.id
         );
         
         showNotification('Permintaan hubungan terkirim!', 'success');
         
     } catch (error) {
         console.error('Error connecting partner:', error);
-        showNotification('Terjadi kesalahan saat menghubungkan!', 'error');
+        showNotification('Gagal mengirim permintaan hubungan: ' + error.message, 'error');
     }
 }
 
@@ -3562,6 +3585,78 @@ async function disconnectPartner() {
     } catch (error) {
         console.error('Error disconnecting partner:', error);
         showNotification('Gagal memutuskan hubungan', 'error');
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('registerName').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+    if (password !== confirmPassword) {
+        showNotification('Password tidak cocok!', 'error');
+        return;
+    }
+
+    try {
+        // 1. Register user dengan Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    name: name
+                }
+            }
+        });
+
+        if (authError) throw authError;
+
+        // 2. Buat record di tabel users
+        const userData = {
+            id: authData.user.id,
+            email: email,
+            name: name,
+            unique_code: generateUniqueCode(),
+            created_at: new Date().toISOString()
+        };
+
+        const { error: insertError } = await supabase
+            .from('users')
+            .insert([userData]);
+        
+        if (insertError) throw insertError;
+
+        showNotification('Akun berhasil dibuat! Silakan cek email untuk verifikasi.', 'success');
+        showLogin();
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        showNotification('Terjadi kesalahan saat mendaftar: ' + error.message, 'error');
+    }
+}
+
+async function addNotificationToPartner(message, type, partnerId = null) {
+    const partner_id = partnerId || currentUser.partner_id;
+    if (!partner_id) return;
+    
+    try {
+        const { error } = await supabase
+            .from('notifications')
+            .insert([{
+                user_id: partner_id,
+                title: 'Permintaan Hubungan',
+                message: message,
+                type: type,
+                is_read: false
+            }]);
+        
+        if (error) throw error;
+        
+    } catch (error) {
+        console.error('Error sending notification to partner:', error);
     }
 }
 </script>
